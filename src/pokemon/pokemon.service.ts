@@ -5,6 +5,8 @@ import { Pokemon } from './entities/pokemon.entity';
 
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PokemonService {
@@ -13,8 +15,11 @@ export class PokemonService {
     
     @InjectModel( Pokemon.name )
     private readonly pokemonModel: Model<Pokemon>,
+    private  readonly configService:ConfigService
 
-  ) {}
+  ) {
+   
+  }
 
 
   async create(createPokemonDto: CreatePokemonDto) {
@@ -32,8 +37,15 @@ export class PokemonService {
 
 
 
-  findAll() {
-    return `This action returns all pokemon`;
+
+  findAll(paginationDto: PaginationDto) {
+   // const limit=paginationDto.limit?? 5;
+    //const offset=paginationDto.offset?? 5;
+    const{limit=10,offset=0}=paginationDto;
+    return this.pokemonModel.find().
+    limit(limit).skip(offset).sort({
+      name:1
+    }).select('-__v');
   }
 
   async findOne(term: string) {
@@ -97,11 +109,6 @@ export class PokemonService {
     console.log(error);
     throw new InternalServerErrorException(`Can't create Pokemon - Check server logs`);
   }
- async setSeed(listPokemon:CreatePokemonDto[]){
-  listPokemon.forEach(elem=>{
-   this.create(elem);
-  });
-
- }
+ 
 
 }
